@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #0f6cbd;
-  --secondary: #14b8a6;
-  --text: #0f172a;
-  --muted: #64748b;
-  --bg: #f8fafc;
+  --primary: #BE4F78;
+  --secondary: #E5799D;
+  --text: #3B1830;
+  --muted: #725A67;
+  --bg: #FFF7FA;
   --white: #ffffff;
-  --border: #e2e8f0;
+  --border: #F3B7CB;
 }
 
 *,
@@ -228,25 +228,138 @@ header {
       transparent);
   animation: shimmer 1.8s infinite;
 }
-/* UNIQUE UI SYSTEM — VERSION 11 / Rose Medical */
-:root{--vp:#be4f78;--va:#e5799d;--vs:#fdebf2;--vb:#fff9fb;--vt:#4b2031;--vm:#7b6470;}
-body.variant-11{background:var(--vb);color:var(--vt);}
-body.variant-11 header{background:color-mix(in srgb,var(--vb) 90%,transparent)!important;border-color:color-mix(in srgb,var(--vp) 24%,transparent)!important;box-shadow:0 12px 40px color-mix(in srgb,var(--vp) 12%,transparent)!important;position:sticky;}
-body.variant-11 header:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:5px;background:linear-gradient(90deg,transparent,var(--vp),var(--va),transparent);}
-body.variant-11 main{background:var(--vb);}
-body.variant-11 main section{border-color:color-mix(in srgb,var(--vp) 18%,transparent)!important;}
-body.variant-11 main h1,body.variant-11 main h2,body.variant-11 main h3,body.variant-11 main h4{color:var(--vt)!important;}
-body.variant-11 main p{color:var(--vm)!important;}
-body.variant-11 main a[class*="bg-[#C05800]"],body.variant-11 main button[class*="bg-[#C05800]"],body.variant-11 .primary-btn{background:var(--vp)!important;}
-body.variant-11 main a[class*="text-[#C05800]"],body.variant-11 main span[class*="text-[#C05800]"]{color:var(--vp)!important;}
-body.variant-11 main input:focus{border-color:var(--vp)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--vp) 15%,transparent)!important;}
-body.variant-11 main [class*="border-[#E8D3BC"]{border-color:color-mix(in srgb,var(--vp) 20%,transparent)!important;}
-body.variant-11 main [class*="bg-[#FFF9EF"]{background-color:var(--vs)!important;}
-body.variant-11 main [class*="bg-[#FDFBD4"]{background-color:color-mix(in srgb,var(--vs) 60%,var(--vb))!important;}
-body.variant-11 main [class*="bg-[#F3E4D2"]{background-color:color-mix(in srgb,var(--vs) 42%,var(--vb))!important;}
-body.variant-11 main [class*="shadow"]{box-shadow:0 20px 50px color-mix(in srgb,var(--vp) 10%,transparent)!important;}
-body.variant-11 .section-padding{padding-block:110px;}
-body.variant-11 main .rounded-3xl{border-radius:51px!important;}
-body.variant-11 main .rounded-2xl{border-radius:14px!important;}
-body.variant-11 main .primary-btn,body.variant-11 main a[class*="bg-[#C05800]"],body.variant-11 main button[class*="bg-[#C05800]"]{border-radius:13px!important;}
-body.variant-11 main section:nth-of-type(3n){background:var(--vs)!important;}
+
+/* UNIQUE UI SYSTEM — VERSION 11 / Raj Biosis */
+:root {
+  --vp: #be4f78;
+  --va: #e5799d;
+  --vs: #fdebf2;
+  --vb: #fff9fb;
+  --vt: #3B1830;
+  --vm: #6B5361;
+}
+
+body.variant-11 {
+  background: var(--vb);
+  color: var(--vt);
+}
+
+body.variant-11 header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(243, 183, 203, 0.6) !important;
+  box-shadow: 0 4px 20px rgba(190, 79, 120, 0.06) !important;
+  position: sticky;
+}
+
+body.variant-11 header:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--vp), var(--va), transparent);
+}
+
+body.variant-11 main {
+  background: var(--vb);
+}
+
+/* Headings & text color baseline for light surfaces */
+body.variant-11 main h1:not([class*="text-white"], [class*="text-[#F"], [data-dark] *, .hero-carousel-section *, .stats-section *),
+body.variant-11 main h2:not([class*="text-white"], [class*="text-[#F"], [data-dark] *, .hero-carousel-section *, .stats-section *),
+body.variant-11 main h3:not([class*="text-white"], [class*="text-[#F"], [data-dark] *, .hero-carousel-section *, .stats-section *),
+body.variant-11 main h4:not([class*="text-white"], [class*="text-[#F"], [data-dark] *, .hero-carousel-section *, .stats-section *) {
+  color: var(--vt);
+}
+
+body.variant-11 main p:not([class*="text-white"], [class*="text-[#F"], [class*="text-amber"], [data-dark] *, .hero-carousel-section *, .stats-section *) {
+  color: var(--vm);
+}
+
+/* Header navigation links visibility guarantee */
+.nav-link-inactive {
+  color: #3B1830 !important;
+}
+
+.nav-link-inactive:hover {
+  color: #BE4F78 !important;
+}
+
+.nav-link-active {
+  color: #BE4F78 !important;
+}
+
+/* Ensure solid primary/secondary buttons and pill badges ALWAYS maintain pure white text */
+.primary-btn,
+.btn-primary,
+button.bg-\[\#BE4F78\],
+a.bg-\[\#BE4F78\],
+button.bg-\[\#8F385B\],
+a.bg-\[\#8F385B\],
+.bg-\[\#BE4F78\]:not([class*="hover:"]):not([class*="after:"]):not([class*="border-"]),
+.bg-\[\#8F385B\]:not([class*="hover:"]):not([class*="after:"]):not([class*="border-"]) {
+  color: #ffffff !important;
+}
+
+/* Secondary outline button text on hover */
+button[class*="hover:bg-[#BE4F78]"]:hover,
+a[class*="hover:bg-[#BE4F78]"]:hover,
+button[class*="hover:bg-[#8F385B]"]:hover,
+a[class*="hover:bg-[#8F385B]"]:hover {
+  color: #ffffff !important;
+}
+
+button[class*="hover:bg-[#BE4F78]"]:hover *,
+a[class*="hover:bg-[#BE4F78]"]:hover *,
+button[class*="hover:bg-[#8F385B]"]:hover *,
+a[class*="hover:bg-[#8F385B]"]:hover * {
+  color: #ffffff !important;
+}
+
+/* Card icon hover visibility guarantee across all Lucide and SVG icons */
+.group:hover [class*="group-hover:text-white"] svg,
+.group:hover [class*="group-hover:!text-white"] svg,
+.group:hover [class*="group-hover:text-white"] path,
+.group:hover [class*="group-hover:!text-white"] path,
+.group:hover [class*="group-hover:text-white"] line,
+.group:hover [class*="group-hover:!text-white"] line,
+.group:hover [class*="group-hover:text-white"] polyline,
+.group:hover [class*="group-hover:!text-white"] polyline,
+.group:hover [class*="group-hover:text-white"] circle,
+.group:hover [class*="group-hover:!text-white"] circle,
+.group:hover [class*="group-hover:text-white"] rect,
+.group:hover [class*="group-hover:!text-white"] rect {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Input focus styles */
+body.variant-11 main input:focus,
+body.variant-11 main textarea:focus {
+  border-color: var(--vp) !important;
+  box-shadow: 0 0 0 3px rgba(190, 79, 120, 0.15) !important;
+}
+
+/* Dark elements support */
+[data-dark="true"],
+.dark-section,
+.hero-carousel-section,
+.stats-section {
+  color: #ffffff !important;
+}
+
+[data-dark="true"] h1,
+[data-dark="true"] h2,
+[data-dark="true"] h3,
+[data-dark="true"] h4,
+.hero-carousel-section h1,
+.hero-carousel-section h2,
+.hero-carousel-section h3,
+.hero-carousel-section h4,
+.stats-section h1,
+.stats-section h2,
+.stats-section h3,
+.stats-section h4 {
+  color: #ffffff !important;
+}

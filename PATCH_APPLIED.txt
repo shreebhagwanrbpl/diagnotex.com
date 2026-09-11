@@ -1,0 +1,1 @@
+Applied requested rose theme, dynamic fallback removal, overlapping hero, 3 homepage products, about image, PDP duplicate-detail cleanup/gap reduction, hover fixes, dynamic service content with static card design.

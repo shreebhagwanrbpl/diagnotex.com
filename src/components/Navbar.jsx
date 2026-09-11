@@ -47,127 +47,129 @@ export default function Navbar() {
   ];
 
   return (
- <header className="sticky top-0 z-50 border-b border-[#E8D3BC] bg-white/90 backdrop-blur-xl shadow-sm">
-
-  <div className="container-custom flex h-20 items-center justify-between">
-
-    {/* Logo */}
-
-    <Link href={makeLink("/")} className="relative block h-16 w-48 shrink-0 transition-transform hover:scale-105">
-
-      <Image
-        src="/logo.png"
-        alt="Raj Biosis Private Limited"
-        fill
-        className="object-contain object-left"
-        priority
-      />
-
-    </Link>
-
-    {/* Desktop Menu */}
-
-    <nav className="hidden items-center gap-8 lg:flex">
-
-      {navLinks.map((link) => (
-
+    <header className="sticky top-0 z-50 border-b border-[#F3B7CB]/80 bg-white/95 backdrop-blur-xl shadow-sm">
+      <div className="container-custom flex h-20 items-center justify-between">
+        {/* Logo */}
         <Link
-          key={link.name}
-          href={makeLink(link.path)}
-          className="relative font-medium text-[#5B4634] transition-all duration-300 hover:text-[#C05800] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-[#C05800] after:transition-all after:duration-300 hover:after:w-full"
+          href={makeLink("/")}
+          className="relative block h-16 w-48 shrink-0 transition-transform hover:scale-105"
         >
-          {link.name}
+          <Image
+            src="/logo.png"
+            alt="Raj Biosis Private Limited"
+            fill
+            className="object-contain object-left"
+            priority
+          />
         </Link>
 
-      ))}
+        {/* Desktop Menu */}
+        <nav className="hidden items-center gap-8 lg:flex">
+          {navLinks.map((link) => {
+            const isActive =
+              pathname === link.path ||
+              (district &&
+                pathname ===
+                  `/${district}${link.path === "/" ? "" : link.path}`);
 
-    </nav>
+            return (
+              <Link
+                key={link.name}
+                href={makeLink(link.path)}
+                className={`relative py-1 text-[15px] font-bold tracking-tight transition-all duration-300 ${
+                  isActive
+                    ? "!text-[#BE4F78]"
+                    : "text-[#3B1830] hover:text-[#BE4F78]"
+                }`}
+              >
+                <span className={isActive ? "!text-[#BE4F78]" : "text-[#3B1830] hover:text-[#BE4F78]"}>
+                  {link.name}
+                </span>
+                <span
+                  className={`absolute left-0 -bottom-1 h-[2.5px] bg-[#BE4F78] transition-all duration-300 rounded-full ${
+                    isActive ? "w-full" : "w-0 hover:w-full"
+                  }`}
+                />
+              </Link>
+            );
+          })}
+        </nav>
 
-    {/* Desktop Button */}
-
-    <div className="hidden lg:block">
-
-      <Link href={makeLink("/contact")}>
-
-        <button className="rounded-xl bg-[#C05800] px-6 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#713600] hover:shadow-xl hover:shadow-[#C05800]/20">
-
-          Get Quote
-
-        </button>
-
-      </Link>
-
-    </div>
-
-    {/* Mobile Button */}
-
-    <button
-      onClick={() => setMenuOpen(!menuOpen)}
-      className="rounded-xl border border-[#E8D3BC] bg-[#FDFBD4] p-2 transition-all duration-300 hover:bg-[#F3E4D2] lg:hidden"
-    >
-
-      {menuOpen ? (
-        <X
-          size={26}
-          className="text-[#C05800]"
-        />
-      ) : (
-        <Menu
-          size={26}
-          className="text-[#C05800]"
-        />
-      )}
-
-    </button>
-
-  </div>
-
-  {/* Mobile Menu */}
-
-  <div
-    className={`overflow-hidden transition-all duration-300 lg:hidden ${
-      menuOpen ? "max-h-[500px]" : "max-h-0"
-    }`}
-  >
-
-    <div className="border-t border-[#E8D3BC] bg-white px-6 py-6">
-
-      <nav className="flex flex-col gap-5">
-
-        {navLinks.map((link) => (
-
-          <Link
-            key={link.name}
-            href={makeLink(link.path)}
-            onClick={() => setMenuOpen(false)}
-            className="font-medium text-[#5B4634] transition-all duration-300 hover:translate-x-1 hover:text-[#C05800]"
-          >
-
-            {link.name}
-
+        {/* Desktop Button */}
+        <div className="hidden lg:block">
+          <Link href={makeLink("/contact")}>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl bg-[#BE4F78] px-6 py-3 text-sm font-bold !text-white shadow-md transition-all duration-300 hover:bg-[#8F385B] hover:shadow-xl hover:shadow-[#BE4F78]/25 hover:-translate-y-0.5"
+            >
+              <span className="!text-white text-white font-bold">Get Quote</span>
+            </button>
           </Link>
+        </div>
 
-        ))}
-
-        <Link
-          href={makeLink("/contact")}
-          onClick={() => setMenuOpen(false)}
+        {/* Mobile Toggle Button */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="rounded-xl border border-[#F3B7CB] bg-[#FCE7EF] p-2 transition-all duration-300 hover:bg-[#F9DCE8] lg:hidden"
+          aria-label="Toggle Navigation Menu"
         >
+          {menuOpen ? (
+            <X size={26} className="text-[#BE4F78]" />
+          ) : (
+            <Menu size={26} className="text-[#BE4F78]" />
+          )}
+        </button>
+      </div>
 
-          <button className="mt-2 w-full rounded-xl bg-[#C05800] py-3 font-semibold text-white transition-all duration-300 hover:bg-[#713600]">
+      {/* Mobile Menu */}
+      <div
+        className={`overflow-hidden transition-all duration-300 lg:hidden ${
+          menuOpen ? "max-h-[500px]" : "max-h-0"
+        }`}
+      >
+        <div className="border-t border-[#F3B7CB] bg-white px-6 py-6 shadow-xl">
+          <nav className="flex flex-col gap-4">
+            {navLinks.map((link) => {
+              const isActive =
+                pathname === link.path ||
+                (district &&
+                  pathname ===
+                    `/${district}${link.path === "/" ? "" : link.path}`);
 
-            Get Quote
+              return (
+                <Link
+                  key={link.name}
+                  href={makeLink(link.path)}
+                  onClick={() => setMenuOpen(false)}
+                  className={`text-base font-bold transition-all duration-300 ${
+                    isActive
+                      ? "!text-[#BE4F78]"
+                      : "text-[#3B1830] hover:text-[#BE4F78]"
+                  }`}
+                >
+                  <span className={isActive ? "!text-[#BE4F78]" : "text-[#3B1830] hover:text-[#BE4F78]"}>
+                    {link.name}
+                  </span>
+                </Link>
+              );
+            })}
 
-          </button>
-
-        </Link>
-
-      </nav>
-
-    </div>
-
-  </div>
-
-</header>
+            <Link
+              href={makeLink("/contact")}
+              onClick={() => setMenuOpen(false)}
+              className="mt-2"
+            >
+              <button
+                type="button"
+                className="w-full rounded-xl bg-[#BE4F78] py-3.5 text-sm font-bold !text-white transition-all duration-300 hover:bg-[#8F385B] shadow-md"
+              >
+                <span className="!text-white text-white font-bold">Get Quote</span>
+              </button>
+            </Link>
+          </nav>
+        </div>
+      </div>
+    </header>
   );
 }

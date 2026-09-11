@@ -6,14 +6,14 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   metadataBase: new URL(
-    "https://clinidix.com"
+    "https://diagnotex.com"
   ),
 
   title:
-    "Rose Medical | Biomedical & Diagnostic Equipment",
+    "Raj Biosis | Biomedical & Diagnostic Equipment",
 
   description:
-    "Raj Biosis Private Limited (Raj Biomedical) supplies CBC Machines, Hematology Analyzers, Biochemistry Analyzers, ELISA Readers and laboratory equipment across India.",
+    "Raj Biosis Private Limited  supplies CBC Machines, Hematology Analyzers, Biochemistry Analyzers, ELISA Readers and laboratory equipment across India.",
 
   keywords: [
     "Biomedical Equipment Supplier",
@@ -24,17 +24,17 @@ export const metadata = {
     "Diagnostic Equipment Supplier",
     "Medical Equipment Supplier India",
     "Raj Biosis",
-    "Raj Biomedical",
+    "Raj Biosis",
   ],
 
   openGraph: {
     title:
-      "Rose Medical | Biomedical & Diagnostic Equipment",
+      "Raj Biosis | Biomedical & Diagnostic Equipment",
 
     description:
       "A softer premium healthcare interface focused on trust and human connection.",
 
-    url: "https://clinidix.com",
+    url: "https://diagnotex.com",
 
     siteName: "Raj Biosis Private Limited",
 
@@ -55,7 +55,7 @@ export const metadata = {
     card: "summary_large_image",
 
     title:
-      "Rose Medical | Biomedical & Diagnostic Equipment",
+      "Raj Biosis | Biomedical & Diagnostic Equipment",
 
     description:
       "A softer premium healthcare interface focused on trust and human connection.",
@@ -70,7 +70,7 @@ export const metadata = {
   },
 
   alternates: {
-    canonical: "https://clinidix.com",
+    canonical: "https://diagnotex.com",
   },
 };
 

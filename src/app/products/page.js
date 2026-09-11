@@ -142,13 +142,13 @@ export default function ProductsPage() {
                 LEFT SIDEBAR
           ====================== */}
 
-            <aside className="sticky top-28 h-fit rounded-[30px] border border-green-100 bg-white p-6 shadow-xl shadow-green-100">
+            <aside className="sticky top-28 h-fit rounded-[30px] border border-pink-100 bg-white p-6 shadow-xl shadow-pink-100">
 
               {/* Heading */}
 
               <div className="mb-6">
 
-                <span className="inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                <span className="inline-flex rounded-full bg-pink-100 px-4 py-2 text-sm font-semibold text-pink-700">
 
                   Browse
 
@@ -169,7 +169,7 @@ export default function ProductsPage() {
                 placeholder="Search Products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="h-12 w-full rounded-xl border border-green-200 bg-green-50 px-4 text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-green-600 focus:bg-white focus:ring-4 focus:ring-green-100"
+                className="h-12 w-full rounded-xl border border-pink-200 bg-pink-50 px-4 text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-pink-600 focus:bg-white focus:ring-4 focus:ring-pink-100"
               />
 
               {/* Categories */}
@@ -180,7 +180,7 @@ export default function ProductsPage() {
 
                   <div
                     key={category}
-                    className="overflow-hidden rounded-2xl border border-green-100"
+                    className="overflow-hidden rounded-2xl border border-pink-100"
                   >
 
                     <button
@@ -188,8 +188,8 @@ export default function ProductsPage() {
                       className={`flex w-full items-center justify-between px-5 py-4 font-medium transition-all duration-300
 
           ${activeCategory === category
-                          ? "bg-green-600 text-white shadow-lg shadow-green-200"
-                          : "bg-white text-slate-700 hover:bg-green-50"
+                          ? "bg-pink-600 text-white shadow-lg shadow-pink-200"
+                          : "bg-white text-slate-700 hover:bg-pink-50"
                         }`}
                     >
 
@@ -208,7 +208,7 @@ export default function ProductsPage() {
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-bold ${activeCategory === category
                           ? "bg-white/20 text-white"
-                          : "bg-green-100 text-green-700"
+                          : "bg-pink-100 text-pink-700"
                           }`}
                       >
 
@@ -235,7 +235,7 @@ export default function ProductsPage() {
                           onClick={() =>
                             scrollToProduct(item.slug, category)
                           }
-                          className="block w-full border-t border-green-100 px-6 py-3 text-left text-sm text-slate-600 transition hover:bg-green-50 hover:text-green-700"
+                          className="block w-full border-t border-pink-100 px-6 py-3 text-left text-sm text-slate-600 transition hover:bg-pink-50 hover:text-pink-700"
                         >
 
                           {item.title}
@@ -272,11 +272,11 @@ export default function ProductsPage() {
 
                       {/* Category Header */}
 
-                      <div className="mb-10 flex items-center justify-between border-b border-green-100 pb-5">
+                      <div className="mb-10 flex items-center justify-between border-b border-pink-100 pb-5">
 
                         <div>
 
-                          <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                          <span className="rounded-full bg-pink-100 px-4 py-2 text-sm font-semibold text-pink-700">
 
                             Category
 
@@ -290,7 +290,7 @@ export default function ProductsPage() {
 
                         </div>
 
-                        <div className="rounded-full border border-green-100 bg-green-50 px-5 py-2 text-green-700 font-semibold">
+                        <div className="rounded-full border border-pink-100 bg-pink-50 px-5 py-2 text-pink-700 font-semibold">
 
                           {list.length} Products
 
@@ -305,14 +305,14 @@ export default function ProductsPage() {
                           <div
                             key={product.slug}
                             id={product.slug}
-                            className="group rounded-[30px] border border-green-100 bg-white p-7 shadow-lg shadow-green-100 transition-all duration-300 hover:-translate-y-2 hover:border-green-300 hover:shadow-2xl hover:shadow-green-200"
+                            className="group rounded-[30px] border border-pink-100 bg-white p-7 shadow-lg shadow-pink-100 transition-all duration-300 hover:-translate-y-2 hover:border-pink-300 hover:shadow-2xl hover:shadow-pink-200"
                           >
 
                             <div className="grid items-center gap-8 lg:grid-cols-[250px_1fr_190px]">
 
                               {/* Image */}
 
-                              <div className="flex h-[220px] items-center justify-center overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-br from-green-50 to-white">
+                              <div className="flex h-[220px] items-center justify-center overflow-hidden rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 to-white">
 
                                 <Image
                                   src={product.image}
@@ -342,9 +342,9 @@ export default function ProductsPage() {
 
                                 <div className="mt-6 grid grid-cols-2 gap-4">
 
-                                  <div className="rounded-2xl border border-green-100 bg-green-50 p-4">
+                                  <div className="rounded-2xl border border-pink-100 bg-pink-50 p-4">
 
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-green-600">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-pink-600">
 
                                       Brand
 
@@ -358,9 +358,9 @@ export default function ProductsPage() {
 
                                   </div>
 
-                                  <div className="rounded-2xl border border-green-100 bg-green-50 p-4">
+                                  <div className="rounded-2xl border border-pink-100 bg-pink-50 p-4">
 
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-green-600">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-pink-600">
 
                                       Model
 
@@ -387,7 +387,7 @@ export default function ProductsPage() {
                                   className="w-full lg:w-auto"
                                 >
 
-                                  <button className="w-full rounded-xl bg-green-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:bg-green-700 hover:shadow-lg hover:shadow-green-200 lg:w-auto">
+                                  <button className="w-full rounded-xl bg-pink-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:bg-pink-700 hover:shadow-lg hover:shadow-pink-200 lg:w-auto">
 
                                     View Details →
 
@@ -424,7 +424,7 @@ export default function ProductsPage() {
             WHY CHOOSE US
       =========================== */}
 
-      <section className="py-24 bg-gradient-to-b from-white to-green-50">
+      <section className="py-24 bg-gradient-to-b from-white to-pink-50">
 
         <div className="max-w-7xl mx-auto px-5">
 
@@ -466,12 +466,12 @@ export default function ProductsPage() {
 
               <div
                 key={index}
-                className="group rounded-[30px] border border-green-100 bg-white p-8 text-center shadow-lg shadow-green-100 transition-all duration-300 hover:-translate-y-2 hover:border-green-300 hover:shadow-2xl hover:shadow-green-200"
+                className="group rounded-[30px] border border-pink-100 bg-white p-8 text-center shadow-lg shadow-pink-100 transition-all duration-300 hover:-translate-y-2 hover:border-pink-300 hover:shadow-2xl hover:shadow-pink-200"
               >
 
                 {/* Icon */}
 
-                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-green-100 to-emerald-100 text-green-600 transition-all duration-300 group-hover:bg-green-600 group-hover:text-white">
+                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-pink-100 to-emerald-100 text-pink-600 transition-all duration-300 group-hover:bg-pink-600 group-hover:text-white">
 
                   {item.icon}
 
@@ -495,7 +495,7 @@ export default function ProductsPage() {
 
                 {/* Bottom Line */}
 
-                <div className="mx-auto mt-8 h-1 w-14 rounded-full bg-green-500 transition-all duration-300 group-hover:w-24"></div>
+                <div className="mx-auto mt-8 h-1 w-14 rounded-full bg-pink-500 transition-all duration-300 group-hover:w-24"></div>
 
               </div>
 
