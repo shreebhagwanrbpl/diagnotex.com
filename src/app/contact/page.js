@@ -1,9 +1,8 @@
 "use client";
+import { db, doc, getDoc, getCachedDoc } from "@/lib/client-api";
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import PageBanner from "@/components/PageBanner";
 import SectionTitle from "@/components/SectionTitle";
 import ContactForm from "@/components/ContactForm";
@@ -42,8 +41,11 @@ const faqs = [
 
 export default function ContactPage() {
   const [districtData, setDistrictData] = useState(null);
-  const [contactInfo, setContactInfo] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [contactInfo, setContactInfo] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "contact"));
+    return cached?.contactInfo || [];
+  });
+  const [loading, setLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
 
   const pathname = usePathname();
@@ -136,7 +138,6 @@ export default function ContactPage() {
       <section className="section-padding bg-gradient-to-b from-white via-[#FFF7FA] to-[#FCE7EF]">
         <div className="container-custom">
           <div className="grid lg:grid-cols-12 gap-12 items-start">
-            {/* Left Contact Cards - 100% Dynamic from Firestore */}
             <div className="lg:col-span-5 space-y-6">
               <SectionTitle
                 badge="Reach Us Directly"
@@ -287,9 +288,8 @@ export default function ContactPage() {
                     <span className="text-base sm:text-lg pr-4">{faq.q}</span>
                     <ChevronDown
                       size={20}
-                      className={`shrink-0 text-[#BE4F78] transition-transform duration-300 ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
+                      className={`shrink-0 text-[#BE4F78] transition-transform duration-300 ${isOpen ? "rotate-180" : ""
+                        }`}
                     />
                   </button>
 

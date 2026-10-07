@@ -1,8 +1,8 @@
 "use client";
+import { db, doc, getDoc, getCachedDoc } from "@/lib/client-api";
+import { fallbackServices } from "@/data/servicesData";
 
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import PageBanner from "@/components/PageBanner";
@@ -56,16 +56,24 @@ const workflowSteps = [
 
 export default function ServicesPage() {
   // ============================================================
-  // DYNAMIC SERVICES
-  // Firebase only
+  // DYNAMIC SERVICES (Instant 0ms cached/fallback initial state)
   // ============================================================
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "services"));
+    if (cached && Array.isArray(cached.services) && cached.services.length > 0) {
+      return cached.services;
+    }
+    return fallbackServices;
+  });
 
   // Dynamic contact data
-  const [contactInfo, setContactInfo] = useState([]);
+  const [contactInfo, setContactInfo] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "contact"));
+    return cached?.contactInfo || [];
+  });
 
-  // Loading state
-  const [loading, setLoading] = useState(true);
+  // Loading state (false immediately if we have services)
+  const [loading, setLoading] = useState(false);
 
   // ============================================================
   // PATH / DISTRICT
@@ -117,7 +125,6 @@ export default function ServicesPage() {
   ];
 
   // ============================================================
-  // FIREBASE DATA
   // ============================================================
   useEffect(() => {
     const fetchServicesAndContact = async () => {
@@ -200,7 +207,6 @@ export default function ServicesPage() {
 
           setServices(dbServices);
         } else {
-          // No Firebase services = empty
           setServices([]);
         }
 
@@ -280,19 +286,13 @@ export default function ServicesPage() {
           SERVICES GRID
           
           ONLY THIS SECTION IS DYNAMIC
-          Service title + description comes from Firebase
           
           Everything else on the page remains static.
       ======================================================== */}
       <section className="section-padding bg-gradient-to-b from-white via-[#FFF7FA] to-[#FCE7EF]">
         <div className="container-custom">
 
-          <SectionTitle
-            badge="Full Service Catalog"
-            title="Designed Around Reliable Operations"
-            description="Explore our specialized services designed to keep clinical laboratories and hospital departments operating at peak accuracy."
-            center
-          />
+
 
           {/* ====================================================
               LOADING
@@ -321,7 +321,6 @@ export default function ServicesPage() {
           ) : services.length > 0 ? (
 
             /* ==================================================
-               FIREBASE DYNAMIC SERVICES
                
                ONLY:
                title

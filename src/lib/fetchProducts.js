@@ -1,20 +1,35 @@
-import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
-import { makeSlug } from "@/data/productsData";
-import { fetchFullCatalog } from "@/lib/data-fetcher";
+import { makeSlug } from "@/lib/catalog-utils";
 
-/**
- * Standardizes raw Firestore product/item document object to standard shape
- */
-export function normalizeProduct(item, defaultCategory = "") {
+function normalizeProduct(item, defaultCategory = "") {
   if (!item || typeof item !== "object") return null;
 
-  const title = (item.title || item.name || item.productName || item.itemName || "").trim();
+  const title = String(
+    item.title ||
+    item.name ||
+    item.productName ||
+    item.itemName ||
+    ""
+  ).trim();
+
   if (!title) return null;
 
-  const rawSlug = item.slug || item.productSlug || item.itemSlug || makeSlug(title);
-  const category = item.category || item.categoryName || defaultCategory || "";
-  const subCategory = item.subCategory || item["sub category"] || item.subCategoryName || "";
+  const rawSlug =
+    item.slug ||
+    item.productSlug ||
+    item.itemSlug ||
+    makeSlug(title);
+
+  const category =
+    item.category ||
+    item.categoryName ||
+    defaultCategory ||
+    "";
+
+  const subCategory =
+    item.subCategory ||
+    item["sub category"] ||
+    item.subCategoryName ||
+    "";
 
   const description =
     item.desc ||
@@ -30,19 +45,28 @@ export function normalizeProduct(item, defaultCategory = "") {
     (Array.isArray(item.images) && item.images[0]) ||
     "";
 
-  let images = Array.isArray(item.images) && item.images.length > 0 ? item.images : image ? [image] : [];
+  const images =
+    Array.isArray(item.images) && item.images.length
+      ? item.images
+      : image
+        ? [image]
+        : [];
 
-  let features = Array.isArray(item.features)
-    ? item.features.filter(Boolean)
-    : typeof item.features === "string"
-    ? item.features.split(",").map((f) => f.trim()).filter(Boolean)
-    : [];
+  const features =
+    Array.isArray(item.features)
+      ? item.features.filter(Boolean)
+      : typeof item.features === "string"
+        ? item.features.split(",").map((x) => x.trim()).filter(Boolean)
+        : [];
 
   return {
     ...item,
     id: item.uid || item.id || item.categoryProductId || rawSlug,
+    uid: item.uid || item.id || rawSlug,
+    productId: item.productId || item.uid || item.id || rawSlug,
     categoryProductId: item.categoryProductId || "",
     title,
+    name: title,
     slug: rawSlug,
     category,
     subCategory,
@@ -71,52 +95,124 @@ export function normalizeProduct(item, defaultCategory = "") {
   };
 }
 
-/**
- * Fetches dynamic products from all possible Firestore locations used by admin panel
- */
-export async function fetchAllDynamicProducts() {
-  const productsMap = new Map();
+export { normalizeProduct };
 
-  const addItems = (itemsArray, defaultCat) => {
-    if (!Array.isArray(itemsArray)) return;
-    itemsArray.forEach((raw) => {
-      const p = normalizeProduct(raw, defaultCat);
-      if (p && p.slug && !productsMap.has(p.slug)) {
-        productsMap.set(p.slug, p);
+// In-memory catalog cache for 0ms instant loading
+let memoryCatalogCache = null;
+let lastFetchTime = 0;
+let inFlightCatalogPromise = null;
+const CACHE_FRESH_MS = 30 * 1000; // 30s considered fresh
+const LOCAL_STORAGE_KEY = "diagnotex_catalog_v2";
+
+export function getCachedProducts() {
+  if (memoryCatalogCache && Array.isArray(memoryCatalogCache) && memoryCatalogCache.length > 0) {
+    return memoryCatalogCache;
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed?.data) && parsed.data.length > 0) {
+          memoryCatalogCache = parsed.data;
+          lastFetchTime = parsed.timestamp || 0;
+          return memoryCatalogCache;
+        }
       }
-    });
-  };
-
-  try {
-    // 1. Fetch full catalog via data-fetcher (subcategories, category products, legacy products)
-    const fullCatalog = await fetchFullCatalog();
-    if (Array.isArray(fullCatalog) && fullCatalog.length > 0) {
-      addItems(fullCatalog);
+    } catch {
+      // Ignore localStorage errors
     }
+  }
 
-    // 2. Fetch extra fallback collections if any
-    const extraSnapshots = await Promise.allSettled([
-      getDocs(collection(db, "websites", "diagnotexcom", "products")),
-      getDocs(collection(db, "websites", "diagnotexcom", "items")),
-      getDocs(collection(db, "products")),
-      getDocs(collection(db, "items")),
-    ]);
+  return null;
+}
 
-    extraSnapshots.forEach((res) => {
-      if (res.status === "fulfilled" && !res.value.empty) {
-        res.value.forEach((docSnap) => {
-          addItems([{ id: docSnap.id, ...docSnap.data() }]);
+function saveCatalogToCache(products) {
+  if (!Array.isArray(products) || products.length === 0) return;
+  memoryCatalogCache = products;
+  lastFetchTime = Date.now();
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify({ timestamp: lastFetchTime, data: products })
+      );
+    } catch {
+      // Ignore quota errors
+    }
+  }
+}
+
+export async function fetchAllDynamicProducts({ force = false } = {}) {
+  const cached = getCachedProducts();
+  const now = Date.now();
+  const isFresh = !force && cached && cached.length > 0 && (now - lastFetchTime < CACHE_FRESH_MS);
+
+  // Return fresh cache immediately
+  if (isFresh) {
+    return cached;
+  }
+
+  // If we have stale cache, trigger background revalidation and return cache immediately for 0ms UI
+  if (!force && cached && cached.length > 0) {
+    if (!inFlightCatalogPromise) {
+      inFlightCatalogPromise = fetch("/api/catalog")
+        .then((res) => res.json())
+        .then((body) => {
+          const raw = body?.products ?? body?.data?.products ?? body?.data ?? body;
+          if (Array.isArray(raw) && raw.length > 0) {
+            const normalized = raw.map((item) => normalizeProduct(item)).filter(Boolean);
+            if (normalized.length > 0) {
+              saveCatalogToCache(normalized);
+            }
+          }
+        })
+        .catch((err) => console.error("[fetchProducts] BG revalidate error:", err))
+        .finally(() => {
+          inFlightCatalogPromise = null;
         });
+    }
+    return cached;
+  }
+
+  // If no cache or force refresh, fetch synchronously
+  if (inFlightCatalogPromise) {
+    return inFlightCatalogPromise;
+  }
+
+  inFlightCatalogPromise = (async () => {
+    try {
+      const response = await fetch("/api/catalog");
+      const body = await response.json();
+
+      if (!response.ok || body?.ok === false) {
+        throw new Error(body?.error || `Catalog API ${response.status}`);
       }
-    });
-  } catch (err) {
-    console.error("Error fetching dynamic products from Firestore:", err);
-  }
 
-  const fetchedList = Array.from(productsMap.values());
-  if (fetchedList.length > 0) {
-    return fetchedList;
-  }
+      const products =
+        body?.products ??
+        body?.data?.products ??
+        body?.data ??
+        body;
 
-  return [];
+      const normalized = Array.isArray(products)
+        ? products.map((item) => normalizeProduct(item)).filter(Boolean)
+        : [];
+
+      if (normalized.length > 0) {
+        saveCatalogToCache(normalized);
+      }
+
+      return normalized.length > 0 ? normalized : (cached || []);
+    } catch (error) {
+      console.error("[fetchProducts] Admin catalog error:", error);
+      return cached || [];
+    } finally {
+      inFlightCatalogPromise = null;
+    }
+  })();
+
+  return inFlightCatalogPromise;
 }

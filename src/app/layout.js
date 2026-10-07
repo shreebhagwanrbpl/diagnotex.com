@@ -2,6 +2,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import DataPreloader from "@/components/DataPreloader";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
@@ -80,6 +81,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased variant-11" data-ui-variant="rose" suppressHydrationWarning>
+        <DataPreloader />
         <Navbar />
 
         <main>

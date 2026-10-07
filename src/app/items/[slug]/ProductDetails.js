@@ -1,12 +1,13 @@
 "use client";
 
+import { db, doc, getDoc, getCachedDoc, addDoc, collection } from "@/lib/client-api";
 import { useEffect, useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { usePathname } from "next/navigation";
 import { makeSlug } from "@/data/productsData";
-import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
+import { fetchAllDynamicProducts, getCachedProducts } from "@/lib/fetchProducts";
 import {
   FaPlay,
   FaShareAlt,
@@ -30,14 +31,6 @@ import {
   Award,
   Zap,
 } from "lucide-react";
-import {
-  doc,
-  getDoc,
-  addDoc,
-  collection,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
-
 /* =========================================================
    IMAGE → BASE64 HELPER FOR PDF
 ========================================================= */
@@ -91,14 +84,29 @@ const loadImageBase64 = async (src) => {
    MAIN PRODUCT DETAILS COMPONENT
 ========================================================= */
 export default function ProductDetails({ slug }) {
-  const [product, setProduct] = useState(null);
-  const [allProducts, setAllProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allProducts, setAllProducts] = useState(() => getCachedProducts() || []);
+  const [product, setProduct] = useState(() => {
+    const prods = getCachedProducts() || [];
+    return prods.find((item) => item.slug === slug || makeSlug(item.title) === slug || item.id === slug) || null;
+  });
+  const [selectedImage, setSelectedImage] = useState(() => {
+    const prods = getCachedProducts() || [];
+    const found = prods.find((item) => item.slug === slug || makeSlug(item.title) === slug || item.id === slug);
+    if (!found) return "";
+    return (Array.isArray(found.images) && found.images.length > 0 ? found.images[0] : null) || found.image || found.imgUrl || found.imageUrl || "";
+  });
+  const [loading, setLoading] = useState(() => {
+    const prods = getCachedProducts() || [];
+    const found = prods.find((item) => item.slug === slug || makeSlug(item.title) === slug || item.id === slug);
+    return !found;
+  });
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [selectedImage, setSelectedImage] = useState("");
   const [selectedMedia, setSelectedMedia] = useState("image");
   const [showShare, setShowShare] = useState(false);
-  const [contactInfo, setContactInfo] = useState([]);
+  const [contactInfo, setContactInfo] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "contact"));
+    return cached?.contactInfo || [];
+  });
   const [downloadingBrochure, setDownloadingBrochure] = useState(false);
   const shareRef = useRef();
 

@@ -1,19 +1,30 @@
 "use client";
+import { db, doc, getDoc, getCachedDoc } from "@/lib/client-api";
+import { fetchAllDynamicProducts, getCachedProducts } from "@/lib/fetchProducts";
 
 import { useEffect, useState, useMemo } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
-import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
 
 export default function Footer() {
-  const [contactInfo, setContactInfo] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [contactInfo, setContactInfo] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "contact"));
+    return cached?.contactInfo || [];
+  });
+  const [categories, setCategories] = useState(() => {
+    const prods = getCachedProducts() || [];
+    const catSet = new Set();
+    prods.forEach((p) => {
+      if (p.category && String(p.category).trim() && String(p.category).trim() !== "All Categories") {
+        catSet.add(String(p.category).trim());
+      }
+    });
+    return Array.from(catSet);
+  });
+  const [loading, setLoading] = useState(false);
   const [districtData, setDistrictData] = useState(null);
 
   const pathname = usePathname();
@@ -108,7 +119,6 @@ export default function Footer() {
     loadDistrict();
   }, [district]);
 
-  // Extract phone numbers flexibly from Firestore contactInfo
   const phoneItems = contactInfo.filter((item) => {
     const l = (item?.label || "").toLowerCase();
     return (
@@ -132,9 +142,9 @@ export default function Footer() {
   });
   const emails = emailItem
     ? (Array.isArray(emailItem.value)
-        ? emailItem.value
-        : [emailItem.value]
-      ).filter((v) => typeof v === "string" && v.trim() !== "")
+      ? emailItem.value
+      : [emailItem.value]
+    ).filter((v) => typeof v === "string" && v.trim() !== "")
     : [];
 
   // Extract address flexibly
@@ -151,8 +161,8 @@ export default function Footer() {
     ? Array.isArray(addressItem.value)
       ? addressItem.value.filter(Boolean).join(", ")
       : typeof addressItem.value === "string"
-      ? addressItem.value.trim()
-      : ""
+        ? addressItem.value.trim()
+        : ""
     : "";
 
   const dynamicAddress = districtData
@@ -288,7 +298,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Contact Info - Purely Dynamic from Firestore */}
           <div>
             <h3 className="mb-5 text-lg font-bold text-[#3B1830]">
               Contact Info

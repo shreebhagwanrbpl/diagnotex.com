@@ -1,11 +1,12 @@
 "use client";
+import { db, doc, getDoc, getCachedDoc } from "@/lib/client-api";
+import { fetchAllDynamicProducts, getCachedProducts } from "@/lib/fetchProducts";
+import { fallbackServices } from "@/data/servicesData";
 
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import {
   Microscope,
@@ -32,7 +33,6 @@ import ServiceCard from "@/components/ServiceCard";
 import ProductCard from "@/components/ProductCard";
 import ContactForm from "@/components/ContactForm";
 import HeroCarousel from "@/components/HeroCarousel";
-import { fetchAllDynamicProducts } from "@/lib/fetchProducts";
 
 const stats = [
   {
@@ -117,12 +117,24 @@ const testimonials = [
 
 export default function Home({ city }) {
   // ============================================================
-  // DYNAMIC DATA
+  // DYNAMIC DATA (Instant 0ms initialization from cache/fallback)
   // ============================================================
-  const [services, setServices] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [contactInfo, setContactInfo] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "services"));
+    if (cached && Array.isArray(cached.services) && cached.services.length > 0) {
+      return cached.services;
+    }
+    return fallbackServices;
+  });
+  const [products, setProducts] = useState(() => getCachedProducts() || []);
+  const [contactInfo, setContactInfo] = useState(() => {
+    const cached = getCachedDoc(doc(db, "websites", "diagnotexcom", "pages", "contact"));
+    return cached?.contactInfo || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const hasProducts = (getCachedProducts() || []).length > 0;
+    return !hasProducts;
+  });
 
   // ============================================================
   // PATH / DISTRICT
@@ -154,147 +166,65 @@ export default function Home({ city }) {
   };
 
   // ============================================================
-  // FETCH DATA
+  // FETCH DATA (Parallel fast SWR fetch)
   // ============================================================
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        // ======================================================
-        // CONTACT DATA
-        // ======================================================
-        try {
-          const contactSnap = await getDoc(
-            doc(
-              db,
-              "websites",
-              "diagnotexcom",
-              "pages",
-              "contact"
-            )
-          );
+        const [contactRes, serviceRes, productRes] = await Promise.allSettled([
+          getDoc(doc(db, "websites", "diagnotexcom", "pages", "contact")),
+          getDoc(doc(db, "websites", "diagnotexcom", "pages", "services")),
+          fetchAllDynamicProducts(),
+        ]);
 
-          if (contactSnap.exists()) {
-            setContactInfo(
-              contactSnap.data()?.contactInfo || []
-            );
-          } else {
-            setContactInfo([]);
+        if (!isMounted) return;
+
+        // Contact Info
+        if (contactRes.status === "fulfilled" && contactRes.value?.exists()) {
+          const info = contactRes.value.data()?.contactInfo;
+          if (Array.isArray(info)) {
+            setContactInfo(info);
           }
-        } catch (contactErr) {
-          console.error(
-            "Error fetching contact data:",
-            contactErr
-          );
-
-          setContactInfo([]);
         }
 
-        // ======================================================
-        // SERVICES DATA
-        //
-        // FIREBASE ONLY
-        //
-        // Admin structure:
-        //
-        // services: [
-        //   {
-        //     title: "...",
-        //     desc: "..."
-        //   }
-        // ]
-        //
-        // NO STATIC FALLBACK
-        // ======================================================
-        try {
-          const serviceSnap = await getDoc(
-            doc(
-              db,
-              "websites",
-              "diagnotexcom",
-              "pages",
-              "services"
-            )
-          );
-
-          if (
-            serviceSnap.exists() &&
-            Array.isArray(
-              serviceSnap.data()?.services
-            )
-          ) {
-            const dbServices = serviceSnap
-              .data()
-              .services
+        // Services
+        if (serviceRes.status === "fulfilled" && serviceRes.value?.exists()) {
+          const rawServices = serviceRes.value.data()?.services;
+          if (Array.isArray(rawServices) && rawServices.length > 0) {
+            const dbServices = rawServices
               .map((service, index) => ({
-                id:
-                  service?.id ||
-                  `service-${index}`,
-
-                title:
-                  typeof service?.title ===
-                    "string"
-                    ? service.title.trim()
-                    : "",
-
-                desc:
-                  typeof service?.desc ===
-                    "string"
-                    ? service.desc.trim()
-                    : "",
+                id: service?.id || `service-${index}`,
+                title: typeof service?.title === "string" ? service.title.trim() : "",
+                desc: typeof service?.desc === "string" ? service.desc.trim() : "",
               }))
-              .filter(
-                (service) =>
-                  service.title &&
-                  service.desc
-              );
+              .filter((service) => service.title && service.desc);
 
-            setServices(dbServices);
-          } else {
-            setServices([]);
+            if (dbServices.length > 0) {
+              setServices(dbServices);
+            }
           }
-        } catch (serviceErr) {
-          console.error(
-            "Error fetching services data:",
-            serviceErr
-          );
-
-          // No static fallback
-          setServices([]);
         }
 
-        // ======================================================
-        // PRODUCTS DATA
-        // ======================================================
-        try {
-          const fetchedProducts =
-            await fetchAllDynamicProducts();
-
-          if (Array.isArray(fetchedProducts)) {
-            setProducts(fetchedProducts);
-          } else {
-            setProducts([]);
-          }
-        } catch (productErr) {
-          console.error(
-            "Error fetching products:",
-            productErr
-          );
-
-          setProducts([]);
+        // Products
+        if (productRes.status === "fulfilled" && Array.isArray(productRes.value)) {
+          setProducts(productRes.value);
         }
       } catch (err) {
-        console.error(
-          "Error fetching dynamic data:",
-          err
-        );
-
-        setServices([]);
+        console.error("Error fetching dynamic data:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const featuredProducts = products.slice(0, 3);
@@ -508,28 +438,39 @@ export default function Home({ city }) {
       {/* ================= SERVICES MATRIX ================= */}
       <section className="section-padding bg-gradient-to-b from-[#FCE7EF] via-white to-[#FFF7FA]">
         <div className="container-custom">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <SectionTitle
+              badge="Healthcare Solutions"
+              title="Support Built Around Your Workflow"
+              description="From NABL-certified calibration to 2-hour emergency repair response, our certified engineers support your clinical operations round the clock."
+            />
 
-          <SectionTitle
-            badge="Healthcare Solutions"
-            title="Support Built Around Your Workflow"
-            description="From NABL-certified calibration to 2-hour emergency repair response, our certified engineers support your clinical operations round the clock."
-            center
-          />
+            <Link
+              href={makeLink("/services")}
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#FFF7FA] border border-[#F3B7CB] px-6 py-3.5 text-sm font-bold text-[#BE4F78] shadow-sm transition-all hover:bg-[#BE4F78] hover:!text-white hover:border-[#BE4F78] shrink-0 group/all"
+            >
+              <span className="group-hover/all:!text-white font-bold">
+                View All Services
+              </span>
+              <ArrowRight
+                size={16}
+                className="group-hover/all:!text-white"
+              />
+            </Link>
+          </div>
 
           {/* ====================================================
-              LOADING SERVICES
+              SERVICES CARDS (Exactly 3 cards)
           ==================================================== */}
-          {loading ? (
-            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
+          {loading && services.length === 0 ? (
+            <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((item) => (
                 <div
                   key={item}
                   className="rounded-3xl border border-[#F3B7CB] bg-white p-8 shadow-sm animate-pulse"
                 >
                   <div className="h-14 w-14 rounded-2xl bg-[#F3B7CB]/30" />
-
                   <div className="mt-6 h-6 w-3/4 rounded bg-[#F3B7CB]/30" />
-
                   <div className="mt-4 space-y-2">
                     <div className="h-4 w-full rounded bg-[#F3B7CB]/30" />
                     <div className="h-4 w-5/6 rounded bg-[#F3B7CB]/30" />
@@ -539,26 +480,13 @@ export default function Home({ city }) {
               ))}
             </div>
           ) : services.length > 0 ? (
-
-            /* ==================================================
-               FIREBASE DYNAMIC SERVICES
-               
-               ONLY:
-               - title
-               - desc
-               
-               NO:
-               - badge
-               - turnaround
-               - highlights
-            ================================================== */
-            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {services.map((srv, idx) => (
+            <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {services.slice(0, 3).map((srv, idx) => (
                 <ServiceCard
                   key={srv.id || idx}
                   icon={
                     serviceIcons[
-                    idx % serviceIcons.length
+                      idx % serviceIcons.length
                     ]
                   }
                   title={srv.title}
@@ -567,31 +495,18 @@ export default function Home({ city }) {
                 />
               ))}
             </div>
-
           ) : (
-
-            /* ==================================================
-               NO SERVICES
-               
-               NO STATIC FALLBACK
-            ================================================== */
-            <div className="mt-16 flex justify-center">
+            <div className="mt-10 flex justify-center">
               <div className="w-full max-w-2xl rounded-3xl border border-[#F3B7CB] bg-white p-10 text-center shadow-sm">
-
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FFF7FA] text-[#BE4F78]">
                   <Wrench size={30} />
                 </div>
-
                 <h3 className="mt-6 text-2xl font-black text-[#3B1830]">
                   No Services Available
                 </h3>
-
                 <p className="mt-3 text-sm leading-relaxed text-[#6B5361]">
-                  Our service catalog is currently being
-                  updated. Please contact our team for
-                  available biomedical support services.
+                  Our service catalog is currently being updated. Please contact our team for available biomedical support services.
                 </p>
-
                 <Link
                   href={makeLink("/contact")}
                   className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-[#BE4F78] px-6 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:bg-[#8F385B] hover:-translate-y-0.5"
@@ -599,11 +514,9 @@ export default function Home({ city }) {
                   Contact Our Team
                   <ArrowRight size={16} />
                 </Link>
-
               </div>
             </div>
           )}
-
         </div>
       </section>
 
